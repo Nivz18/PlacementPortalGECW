@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8" />
+
+  <title>Hello, world!</title>
+
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <meta name="description" content="" />
+
+  <link rel="icon" href="favicon.png">
+<style>
+    div{
+        height:400px;
+        width:400px;
+    }
+</style>
+</head>
+
+<body>
+
+    <div>
+        <h1>Department Wise</h1>
+        <ul>
+            {% for d, c in data %}
+                <li>{{ d}}: {{c}}</li>
+            {% endfor %}
+        </ul>
+        <canvas id="myChart"></canvas>
+      </div>
+      
+
+</body>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <script>
+    const ctx = document.getElementById('myChart');
+  
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: {{dept|safe }},
+        datasets: [{
+          label: 'No of students placed',
+          data:{{count|safe}},
+          borderWidth: 1
+        }]
+      },
+      options: {
+       
+      }
+    });
+  </script>
+</html>
+
+
+
+
+  
+  
