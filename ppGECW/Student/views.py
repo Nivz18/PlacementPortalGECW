@@ -1,7 +1,10 @@
-from django.shortcuts import render,HttpResponse,redirect
+from django.shortcuts import render,HttpResponse,redirect,get_object_or_404
+from django.http import HttpResponseRedirect
 import requests
 from bs4 import BeautifulSoup
+from django.contrib.auth.models import User,auth
 from Student.models import *
+from django.db.models import Count
 from django.template import loader
 import pdfkit
 from django.core.paginator import Paginator
@@ -13,16 +16,75 @@ import logging
 # Create your views here.
 def main_page(request):
     return HttpResponse("hello")
+
 def s_login(request):
-    return HttpResponse("Slogin")
+    message=""
+    if request.method=='POST':
+     username=request.POST['username']
+     password=request.POST['password']
+     user=auth.authenticate(username=username,password=password)
+     if user is not None:
+       auth.login(request,user)
+       print("user verified",user.username)
+       return redirect('/StudentHome')
+     else:
+       message="Invalid credentials"
+    return render(request,'Student/login.html',{'message':message}) 
+
+def s_logout(request):
+  auth.logout(request)
+  print("logged out")
+  return redirect('/StudentLogin')  
+
 def s_signup(request):
-    return HttpResponse("SSignUp")
+   if(request.method=="POST"):
+    first_name=request.POST['firstName']
+    last_name=request.POST['lastName']
+    username=request.POST['username']
+    password1=request.POST['password1']
+    password2=request.POST['password2']
+    email=request.POST['email']
+    department=request.POST['department']
+    batch=request.POST['batch']
+    user=User.objects.create_user(username=username,password=password1,first_name=first_name,last_name=last_name,email=email)
+    profile=Profile.objects.create(username=username,user=user,name=first_name+" "+last_name,email=email,batch=batch,department=department)
+    print("User saved")
+    return redirect('/StudentLogin')
+   else:
+    return render(request,'Student/signup.html')
+
+def s_profile(request,username):
+   profile =Profile.objects.get(username=username)
+   user_profile={}
+   return render(request, 'Student/profile.html', {'profile': profile})
+
+def s_edit_profile(request,username):
+   profile =Profile.objects.get(username=username)
+   if request.method=='POST':
+      name=request.POST['name']
+      email=request.POST['email']
+      cgpa=request.POST['cgpa']
+      if 'profile_picture' in request.FILES:#check if profile picture is passed or not in the form
+            profile_picture = request.FILES['profile_picture']
+            profile.profile_picture = profile_picture #save the profile picture
+      profile.name=name
+      profile.cgpa=cgpa
+      profile.email=email
+      profile.save()#creating object
+      return redirect('s_profile',profile.username)
+   
+   return render(request, 'Student/editprofile.html', {'profile': profile})
+
 def s_home(request):
-    return HttpResponse("Shome")
+    return render(request,'Student/StudentHomePage.html')
+
 def s_oncampus(request):
     return HttpResponse("SOnCampus")
+
 def student_interview_exp(request):
+
     return HttpResponse("SInterviewExperience")
+
 def roadmap_resources(request):
     return render(request,'Student/roadmap.html')
 
@@ -45,7 +107,6 @@ def resume_builder(request):
         project1_link=request.POST.get("project1_link","")
         project2_name=request.POST.get("project2_name","")
         project2_link=request.POST.get("project2_link","")
-
         profile={"name":name,"email":email,'linkedin':linkedin,"skills":skills,"summary":summary,"phone":phone,"university":university,"degree":degree,
                  "school_10":school_10,"school_12":school_12,"cgpa_degree":cgpa_degree,"cgpa_12":cgpa_12,"cgpa_10":cgpa_10,
                  "project1_name":project1_name,"project2_name":project2_name,"project1_link":project1_link,"project2_link":project2_link
@@ -74,14 +135,30 @@ def build_resume(request,profile):
     return response
 
 def splacement_stats (request):
-    cse_count=PlacementDetails.objects.filter(department="CSE").count()
-    ece_count=PlacementDetails.objects.filter(department="ECE").count()
-    me_count=PlacementDetails.objects.filter(department="ME").count()
-    count=[cse_count,ece_count,me_count]
-    dept=["cse","ece",'me']
-    data = zip(dept, count)
-    
-    return render(request,'Student/placementstats.html',{'dept':dept,'count':count,'data':data})
+    result1= PlacementDetails.objects.values('department').annotate(total=Count('department'))
+    result2= PlacementDetails.objects.values('batch').annotate(total=Count('batch'))
+    result3= PlacementDetails.objects.values('company_name').annotate(total=Count('company_name'))
+    dept = []
+    dept_count= []
+    for item in result1:
+      dept.append(item['department'])
+      dept_count.append(item['total'])
+    dept_data=zip(dept,dept_count)
+    company=[]
+    company_count=[]
+    for item in result3:
+       company.append(item['company_name'])
+       company_count.append(item['total'])
+    company_data=zip(company,company_count)
+    batch=[]
+    batch_count=[]
+    for item in result2:
+       batch.append(item['batch'])
+       batch_count.append(item['total'])
+    batch_data=zip(batch,batch_count)
+    return render(request,'Student/placementstats.html',{'dept':dept,'dept_count':dept_count,'company':company,
+                  'company_count':company_count,'batch':batch,'batch_count':batch_count,'dept_data':dept_data,
+                  'company_data':company_data,'batch_data':batch_data})
  
 
 
@@ -102,14 +179,10 @@ def off_campus(request):
     for link in soup.find_all('a',class_='job-name'):
         lnk=link.get('href')
         l_list.append(lnk)  
-    
-
     cmpnylst=soup.find_all('p',class_='job-cname')#get the company name in list
     for cl in cmpnylst:
         c_name=cl.text
         company_list.append(c_name)
-            
-    
     lst=soup.find_all('ul',class_='sjci-need')
     li1=[]
     li2=[]
@@ -131,8 +204,6 @@ def off_campus(request):
                 li2.append(li_tag[i].text)
              else:
                 li3.append(li_tag[i].text)   
-
-    
     for i in range(0,len(company_list)):
         role=role_list[i]
         c_name=company_list[i]
@@ -147,6 +218,6 @@ def off_campus(request):
     else:
        jd=JobDetails.objects.all()
     page = request.GET.get('page', 1)
-    paginator = Paginator(jd,4)
+    paginator = Paginator(jd,8)
     jd=paginator.page(page)
     return render(request,'Student/offcampus.html',{'jd':jd})
