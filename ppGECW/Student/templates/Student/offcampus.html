@@ -293,13 +293,14 @@
             <a href="#">Placement</a>
             <ul class="submenu">
     <li><a href="{% url 'splacement_stats' %}">Placement Statistics</a></li>
-    <li><a href="#">On Campus Placements</a></li>
-    <li><a href="{% url 'off_campus' %}">Off Campus Placements</a></li>
-    <li><a href="#">Placed Students</a></li>
+    <li><a href="{% url 's_oncampus' %}">On Campus Placements</a></li>
+        <li><a href="{% url 'off_campus' %}">Off Campus Placements</a></li>
+        <li><a href="{% url 'placed_students' %}">Placed Students</a></li>
+    
     </ul>
     </li>
     <li><a href="{% url 'roadmap_resources' %}">Roadmap and Resources</a></li>
-    <li><a href="#">Interview Experience</a></li>
+    <li><a href="{% url 'student_interview_exp' %}">Interview Experience</a></li>
     <li><a href="{% url 'resume_builder' %}">Resume Builder</a></li>
     {% if user.is_authenticated %}
     <li><a href="{% url 's_profile' user.username %}"><i class="fas fa-user-circle"></i> {{user.username}}</a></li>

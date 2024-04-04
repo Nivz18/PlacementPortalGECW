@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import path
 from Student import views
+
 urlpatterns = [
     
     path('',views.main_page,name="main_page"),
@@ -15,5 +16,7 @@ urlpatterns = [
     path('StudentProfile/<str:username>/',views.s_profile,name="s_profile"),
     path('EditProfile/<str:username>/',views.s_edit_profile,name="s_edit_profile"),
     path('StudentInterviewExperience/',views.student_interview_exp,name="student_interview_exp"),
-    path('StudentRoadmapAndResources/',views.roadmap_resources,name="roadmap_resources")
+    path('StudentRoadmapAndResources/',views.roadmap_resources,name="roadmap_resources"),
+    path('PlacedStudents/', views.placed_students, name='placed_students'),
+    path('StudentOnCampus/<int:pk>/',views.job_details,name="job_details")
 ]

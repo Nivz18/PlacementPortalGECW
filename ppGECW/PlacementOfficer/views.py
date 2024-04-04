@@ -1,4 +1,4 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import render,redirect, get_object_or_404
 from django.http import HttpResponseRedirect
 from django.shortcuts import render,HttpResponse
 from django.contrib.auth.models import User,auth
@@ -39,9 +39,44 @@ def po_signup(request):
    else:
     return render(request,'PlacementOfficer/signup.html')
 def po_home(request):
-    return HttpResponse("POhome")
+    oncampus_jobs=OnCampusJobs.objects.all()
+    return render(request,'PlacementOfficer/PlacementOfficerHome.html',{'oncampus_jobs':oncampus_jobs})
+
+
+def view_company(request, pk):
+    company = get_object_or_404(OnCampusJobs, pk=pk)
+    return render(request, 'PlacementOfficer/view_company.html', {'company': company})
+
+def view_student(request,job_id):
+    student_jobs = StudentOnCampusJobs.objects.filter(company_id_id=job_id)
+    # Extract the student IDs associated with the filtered jobs
+    student_ids = student_jobs.values_list('student_id', flat=True)
+    # Retrieve profiles whose IDs are in student_ids
+    profiles = Profile.objects.filter(id__in=student_ids)
+    for p in profiles:
+       print(p.name," ",p.cgpa," ",p.email)
+    return render(request, 'PlacementOfficer/StudentDetails.html',{'profiles': profiles})
+    
+    
+
+def delete_company(request, pk):
+    company = get_object_or_404(OnCampusJobs, pk=pk)
+    if request.method == 'POST':
+        company.delete()
+        return redirect('po_home')
+    return render(request, 'PlacementOfficer/confirm_delete.html', {'company': company})
+
 def po_oncampus(request):
-    return HttpResponse("POOnCampus")
+    if request.method=="POST":
+       company_name=request.POST['company_name']
+       ctc=request.POST['ctc']
+       description=request.POST['description']
+       role=request.POST['role']
+       oncampus_jobs=OnCampusJobs(company_name=company_name,role=role,ctc=ctc,description=description)
+       oncampus_jobs.save()
+       return redirect('po_home')
+    return render(request,'PlacementOfficer/OnCampusApplication.html')
+    
 def po_placement_stats (request):
     return HttpResponse("POPlacementStats")
 

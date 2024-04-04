@@ -11,7 +11,8 @@ from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.template.loader import get_template
 from django.conf import settings
-from xhtml2pdf import pisa
+from Alumni.models import *
+from PlacementOfficer.models import *
 import logging
 # Create your views here.
 def main_page(request):
@@ -79,7 +80,20 @@ def s_home(request):
     return render(request,'Student/StudentHomePage.html')
 
 def s_oncampus(request):
-    return HttpResponse("SOnCampus")
+    jobs = OnCampusJobs.objects.all()
+    return render(request, 'Student/StudentOnCampus.html', {'jobs': jobs})
+
+def job_details(request,pk):
+    job = get_object_or_404(OnCampusJobs, pk=pk)
+    
+    if request.method == 'POST':
+        # Assuming you have the current student logged in and stored in `request.user.profile`
+        student = request.user.profile
+        # Create a new StudentOnCampusJobs object
+        student_job = StudentOnCampusJobs(company_id=job, student_id=student)
+        student_job.save()
+        return redirect('s_oncampus')
+    return render(request, 'Student/JobDetails.html', {'job': job})
 
 def student_interview_exp(request):
 
@@ -221,3 +235,17 @@ def off_campus(request):
     paginator = Paginator(jd,8)
     jd=paginator.page(page)
     return render(request,'Student/offcampus.html',{'jd':jd})
+
+def student_interview_exp(request):
+   interviews=InterviewExperience.objects.all()
+   return render(request,'Student/InterviewExperience.html',{'interviews':interviews})
+
+def placed_students(request):
+    
+    students = PlacementDetails.objects.all()
+
+    if 'batch' in request.GET:
+        batch = request.GET['batch']
+        students = students.filter(batch=batch)
+
+    return render(request, 'Student/PlacedStudents.html', {'students': students})
