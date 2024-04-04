@@ -21,7 +21,7 @@
             <p><strong>Description:</strong> {{ job.description|truncatechars:100 }}</p>
             <!-- Truncate description to 100 characters -->
             <!-- Adjust the number of characters as needed -->
-            <a href="{% url 'job_details' job.id %}" class="apply-button">Apply</a>
+            <a href="{% url 'job_details' job.id %}" class="apply">Read more</a>
         </div>
         {% endfor %}
     </div>
