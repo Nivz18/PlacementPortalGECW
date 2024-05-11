@@ -53,8 +53,8 @@ def view_student(request,job_id):
     student_ids = student_jobs.values_list('student_id', flat=True)
     # Retrieve profiles whose IDs are in student_ids
     profiles = Profile.objects.filter(id__in=student_ids)
-    for p in profiles:
-       print(p.name," ",p.cgpa," ",p.email)
+    '''for p in profiles:
+       print(p.name," ",p.cgpa," ",p.email)'''
     return render(request, 'PlacementOfficer/StudentDetails.html',{'profiles': profiles})
     
     
@@ -66,16 +66,21 @@ def delete_company(request, pk):
         return redirect('po_home')
     return render(request, 'PlacementOfficer/confirm_delete.html', {'company': company})
 
-def po_oncampus(request):
-    if request.method=="POST":
-       company_name=request.POST['company_name']
-       ctc=request.POST['ctc']
-       description=request.POST['description']
-       role=request.POST['role']
-       oncampus_jobs=OnCampusJobs(company_name=company_name,role=role,ctc=ctc,description=description)
-       oncampus_jobs.save()
-       return redirect('po_home')
-    return render(request,'PlacementOfficer/OnCampusApplication.html')
+def add_company(request):
+    if request.method == 'POST':
+        company_name = request.POST.get('company_name')
+        role = request.POST.get('role')
+        ctc = request.POST.get('ctc')
+        description = request.POST.get('description')
+        
+        # Create a new OnCampusJobs instance and save it
+        new_company = OnCampusJobs(company_name=company_name, role=role, ctc=ctc, description=description)
+        new_company.save()
+        
+        return redirect('po_home')  # Redirect to company list page after adding
+    return render(request, 'PlacementOfficer/AddCompany.html')
+
+
     
 def po_placement_stats (request):
     return HttpResponse("POPlacementStats")

@@ -95,10 +95,6 @@ def job_details(request,pk):
         return redirect('s_oncampus')
     return render(request, 'Student/JobDetails.html', {'job': job})
 
-def student_interview_exp(request):
-
-    return HttpResponse("SInterviewExperience")
-
 def roadmap_resources(request):
     return render(request,'Student/roadmap.html')
 
@@ -241,11 +237,22 @@ def student_interview_exp(request):
    return render(request,'Student/InterviewExperience.html',{'interviews':interviews})
 
 def placed_students(request):
-    
     students = PlacementDetails.objects.all()
-
     if 'batch' in request.GET:
         batch = request.GET['batch']
         students = students.filter(batch=batch)
-
     return render(request, 'Student/PlacedStudents.html', {'students': students})
+
+def add_placement(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        company_name = request.POST.get('company_name')
+        department = request.POST.get('department')
+        ctc = request.POST.get('ctc')
+        batch = request.POST.get('batch')
+        
+        new_placement = PlacementDetails(name=name, company_name=company_name, department=department, ctc=ctc, batch=batch)
+        new_placement.save()
+        
+        return redirect('placed_students')  # Redirect to placement list page after adding
+    return render(request, 'Student/AddPlacement.html')

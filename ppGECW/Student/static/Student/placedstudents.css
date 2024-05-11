@@ -25,6 +25,28 @@ button[type="submit"] {
     cursor: pointer;
 }
 
+.center-button {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.placed_button {
+    background-color: #4CAF50; /* Green color */
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.placed_button:hover {
+    background-color: #45a049; /* Darker green color on hover */
+}
+
 table {
     margin: 0 auto; /* Center align the table */
     border-collapse: collapse;

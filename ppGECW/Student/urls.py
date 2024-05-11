@@ -18,5 +18,6 @@ urlpatterns = [
     path('StudentInterviewExperience/',views.student_interview_exp,name="student_interview_exp"),
     path('StudentRoadmapAndResources/',views.roadmap_resources,name="roadmap_resources"),
     path('PlacedStudents/', views.placed_students, name='placed_students'),
-    path('StudentOnCampus/<int:pk>/',views.job_details,name="job_details")
+    path('StudentOnCampus/<int:pk>/',views.job_details,name="job_details"),
+    path('StudentAddPlacement/', views.add_placement, name='add_placement'),
 ]
